@@ -1,1 +1,51 @@
-[Paste V5 from before - the one with <input type="file" id="file"> ]
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Snoopgram V5</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+body{background:#000;color:#fff;font-family:sans-serif;margin:0}
+header{padding:15px;text-align:center;font-weight:900;background:linear-gradient(90deg,#feda75,#fa7e1e,#d62976)}
+.card{border-bottom:1px solid #222;padding:15px}
+video{width:100%;background:#111;border-radius:12px}
+.btn{background:linear-gradient(90deg,#feda75,#fa7e1e,#d62976);border:0;padding:12px;border-radius:25px;font-weight:900;width:100%;margin-top:10px}
+input{width:100%;padding:12px;background:#111;color:#fff;border:1px solid #333;border-radius:10px;margin:5px 0;box-sizing:border-box}
+#progress{height:8px;background:#222;display:none;border-radius:5px;margin:10px 0}
+#bar{height:100%;background:#feda75;width:0%;border-radius:5px}
+</style>
+</head>
+<body>
+<header>SNOOPGRAM 🌍 - Direct Upload</header>
+<div style="padding:15px;max-width:500px;margin:auto">
+<input id="artist" placeholder="Artist name">
+<input id="caption" placeholder="Caption...">
+<input type="file" id="file" accept="video/*">
+<div id="progress"><div id="bar"></div></div>
+<button class="btn" onclick="upload()">📤 UPLOAD & POST WORLDWIDE</button>
+<div id="feed"></div>
+</div>
+<script>
+const supa=supabase.createClient('https://dexrbqnzqnvjappgfpcp.supabase.co','sb_publishable_TqEnWYB73DBgu2ed62hAdg_UUhgYOm3');
+async function upload(){
+const f=document.getElementById('file').files[0];
+if(!f)return alert('Pick video!');
+document.getElementById('progress').style.display='block';
+const name=Date.now()+'_'+f.name.replace(/[^a-z0-9.]/gi,'');
+const {error}=await supa.storage.from('videos').upload(name,f);
+if(error)return alert(error.message);
+const {data}=supa.storage.from('videos').getPublicUrl(name);
+const artist=document.getElementById('artist').value||'Anonymous';
+const caption=document.getElementById('caption').value||'';
+const {error:dbErr}=await supa.from('posts').insert([{artist_name:artist,caption:caption,video_url:data.publicUrl}]);
+if(dbErr)alert(dbErr.message);else{alert('LIVE! 🌍');location.reload();}
+}
+async function load(){
+const {data}=await supa.from('posts').select('*').order('created_at',{ascending:false}).limit(20);
+if(data)document.getElementById('feed').innerHTML=data.map(p=>`<div class="card"><b>${p.artist_name}</b><p>${p.caption||''}</p><video src="${p.video_url}" controls playsinline></video></div>`).join('');
+}
+load();
+supa.channel('posts').on('postgres_changes',{event:'INSERT',schema:'public',table:'posts'},()=>load()).subscribe();
+</script>
+</body>
+  </html>
