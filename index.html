@@ -2,41 +2,58 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Snoopgram V7 - JerryHerman</title>
+<title>Snoopgram V8 - LIVE CHAT</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js"></script>
 <style>
 body{background:#000;color:#fff;font-family:sans-serif;margin:0}
-header{padding:15px;text-align:center;font-weight:900;background:linear-gradient(90deg,#feda75,#fa7e1e,#d62976);position:sticky;top:0;z-index:10}
+header{padding:15px;text-align:center;font-weight:900;background:linear-gradient(90deg,#feda75,#fa7e1e,#d62976);position:sticky;top:0;z-index:10;display:flex;justify-content:space-between;align-items:center}
 .card{border:1px solid #222;margin:12px;border-radius:16px;padding:12px;background:#0a0a0a}
 video{width:100%;background:#111;border-radius:12px;max-height:70vh}
 .btn{background:linear-gradient(90deg,#feda75,#fa7e1e,#d62976);border:0;padding:14px;border-radius:25px;font-weight:900;width:100%;font-size:16px}
 .btn-green{background:#00a859;color:#fff}
 .btn-like{background:#222;color:#fff;border:1px solid #333;width:auto;padding:8px 14px;border-radius:20px;margin-right:6px}
-input{width:100%;padding:14px;background:#111;color:#fff;border:1px solid #333;border-radius:10px;margin:6px 0;box-sizing:border-box}
+input{width:100%;padding:12px;background:#111;color:#fff;border:1px solid #333;border-radius:10px;margin:6px 0;box-sizing:border-box}
 #progress{height:8px;background:#222;display:none;border-radius:5px;margin:10px 0;overflow:hidden}
 #bar{height:100%;background:#feda75;width:0%;transition:width 0.2s}
 .row{display:flex;gap:8px;margin-top:8px}
+#chatBox{position:fixed;bottom:0;right:0;left:0;max-width:500px;margin:auto;background:#111;border-top:2px solid #d62976;border-radius:16px 16px 0 0;padding:10px;z-index:20;max-height:50vh;display:flex;flex-direction:column}
+#messages{overflow-y:auto;flex:1;max-height:25vh;margin-bottom:8px}
+.msg{background:#222;padding:6px 10px;border-radius:12px;margin:4px 0;font-size:13px}
+.msg b{color:#feda75}
+.chatInput{display:flex;gap:6px}
+.chatInput input{flex:1;margin:0}
+#toggleChat{position:fixed;bottom:15px;right:15px;z-index:30;background:#d62976;color:#fff;border:0;border-radius:50%;width:55px;height:55px;font-size:24px;font-weight:900}
 </style>
 </head>
 <body>
-<header>SNOOPGRAM 🌍 @JerryHerman</header>
-<div style="padding:15px;max-width:500px;margin:auto">
+<header><span>SNOOPGRAM 🌍 @JerryHerman</span><span style="font-size:12px;background:#000;padding:4px 8px;border-radius:10px">LIVE CHAT 💬</span></header>
+<div style="padding:15px;max-width:500px;margin:auto;padding-bottom:120px">
 <input id="artist" value="JerryHerman">
 <input id="caption" placeholder="Caption - e.g Yoyo challenge 🔥">
 <input type="file" id="file" accept="video/*">
 <div id="progress"><div id="bar"></div></div>
 <div id="status" style="color:#feda75;text-align:center;font-weight:700"></div>
 <button class="btn" id="upBtn" onclick="upload()">📤 POST AS @JerryHerman</button>
-<div id="feed" style="margin-top:20px">Loading feed...</div>
+<div id="feed" style="margin-top:20px">Loading...</div>
+</div>
+<button id="toggleChat" onclick="toggleChat()">💬</button>
+<div id="chatBox">
+<div style="display:flex;justify-content:space-between;align-items:center"><b>🔥 LIVE CHAT — UG</b><small>● online</small></div>
+<div id="messages"></div>
+<div class="chatInput">
+<input id="chatMsg" placeholder="Say something...">
+<button class="btn" style="width:auto;padding:10px 16px" onclick="sendMsg()">Send</button>
+</div>
 </div>
 <script>
 const supa = supabase.createClient('https://dexrbqnzqnvjappgfpcp.supabase.co','sb_publishable_TqEnWYB73DBgu2ed62hAdg_UUhgYOm3');
+let chatOpen=true;
+function toggleChat(){ chatOpen=!chatOpen; document.getElementById('chatBox').style.display=chatOpen?'flex':'none'; }
 async function upload(){
  const f=document.getElementById('file').files[0];
  if(!f){alert('Choose video!');return;}
  const btn=document.getElementById('upBtn'); btn.disabled=true; btn.innerText='UPLOADING... ⏳';
  document.getElementById('progress').style.display='block';
- document.getElementById('status').innerText='Uploading '+ (f.size/1024/1024).toFixed(1)+'MB...';
  try{
   const name=Date.now()+'_'+f.name.replace(/[^a-zA-Z0-9.-]/g,'_');
   const {error}=await supa.storage.from('videos').upload(name,f);
@@ -46,29 +63,35 @@ async function upload(){
   const artist=document.getElementById('artist').value||'JerryHerman';
   const cap=document.getElementById('caption').value||'';
   localStorage.setItem('snoop_user',artist);
-  const {error:dbErr}=await supa.from('posts').insert([{artist_name:artist,caption:cap,video_url:data.publicUrl,likes:0}]);
-  if(dbErr) throw dbErr;
+  await supa.from('posts').insert([{artist_name:artist,caption:cap,video_url:data.publicUrl,likes:0}]);
   document.getElementById('bar').style.width='100%';
   alert('🔥 LIVE AS @'+artist+'!'); location.reload();
  }catch(e){alert('FAILED: '+e.message); btn.disabled=false; btn.innerText='📤 POST AS @JerryHerman';}
 }
-async function like(id,cur){
- await supa.from('posts').update({likes:(cur||0)+1}).eq('id',id); load();
-}
+async function like(id,cur){ await supa.from('posts').update({likes:(cur||0)+1}).eq('id',id); load(); }
 async function load(){
  const saved=localStorage.getItem('snoop_user'); if(saved) document.getElementById('artist').value=saved;
  const {data}=await supa.from('posts').select('*').order('created_at',{ascending:false}).limit(30);
  if(data){
   document.getElementById('feed').innerHTML=data.map(p=>{
    const url=p.video_url; if(!url) return '';
-   const artist=p.artist_name||'JerryHerman';
-   const cap=p.caption||''; const likes=p.likes||0;
-   return `<div class="card"><b>@${artist}</b><p>${cap}</p><video src="${url}" controls playsinline preload="metadata"></video><div class="row"><button class="btn-like" onclick="like('${p.id}',${likes})">❤️ ${likes}</button><a href="https://wa.me/?text=${encodeURIComponent(url)}" target="_blank" style="flex:1"><button class="btn-like" style="width:100%">↗️ Share</button></a><a href="https://flutterwave.com/pay/snoopgramtip" target="_blank" style="flex:1"><button class="btn btn-green" style="padding:8px">💛 Tip 10K</button></a></div></div>`;
-  }).join('')||'No videos yet - be first!';
+   return `<div class="card"><b>@${p.artist_name||'JerryHerman'}</b><p>${p.caption||''}</p><video src="${url}" controls playsinline></video><div class="row"><button class="btn-like" onclick="like('${p.id}',${p.likes||0})">❤️ ${p.likes||0}</button><a href="https://wa.me/?text=${encodeURIComponent(url)}" target="_blank" style="flex:1"><button class="btn-like" style="width:100%">↗️ Share</button></a><a href="https://flutterwave.com/pay/snoopgramtip" target="_blank" style="flex:1"><button class="btn btn-green" style="padding:8px">💛 Tip</button></a></div></div>`;
+  }).join('')||'No videos';
  }
 }
-load();
-supa.channel('v7').on('postgres_changes',{event:'INSERT',schema:'public',table:'posts'},()=>load()).subscribe();
+async function loadChat(){
+ const {data}=await supa.from('messages').select('*').order('created_at',{ascending:false}).limit(50);
+ if(data){ document.getElementById('messages').innerHTML=data.reverse().map(m=>`<div class="msg"><b>@${m.user_name||'Anon'}:</b> ${m.message}</div>`).join(''); }
+}
+async function sendMsg(){
+ const txt=document.getElementById('chatMsg').value.trim(); if(!txt) return;
+ const name=document.getElementById('artist').value||'JerryHerman';
+ await supa.from('messages').insert([{user_name:name,message:txt}]);
+ document.getElementById('chatMsg').value=''; loadChat();
+}
+document.getElementById('chatMsg').addEventListener('keypress',e=>{ if(e.key==='Enter') sendMsg(); });
+load(); loadChat();
+supa.channel('v8').on('postgres_changes',{event:'INSERT',schema:'public',table:'posts'},()=>load()).on('postgres_changes',{event:'INSERT',schema:'public',table:'messages'},()=>loadChat()).subscribe();
 </script>
 </body>
-</html>
+                                                                                                                  </html>
