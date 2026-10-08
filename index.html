@@ -2,86 +2,71 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Snoopgram V5.1 - Fixed Upload</title>
+<title>Snoopgram V6 - Uganda TikTok</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js"></script>
 <style>
 body{background:#000;color:#fff;font-family:sans-serif;margin:0}
-header{padding:15px;text-align:center;font-weight:900;background:linear-gradient(90deg,#feda75,#fa7e1e,#d62976)}
-.card{border:1px solid #222;margin:10px;border-radius:12px;padding:10px}
-video{width:100%;background:#111;border-radius:12px}
-.btn{background:linear-gradient(90deg,#feda75,#fa7e1e,#d62976);border:0;padding:14px;border-radius:25px;font-weight:900;width:100%;margin-top:10px;font-size:16px}
-input{width:100%;padding:14px;background:#111;color:#fff;border:1px solid #333;border-radius:10px;margin:6px 0;box-sizing:border-box;font-size:16px}
+header{padding:15px;text-align:center;font-weight:900;background:linear-gradient(90deg,#feda75,#fa7e1e,#d62976);position:sticky;top:0;z-index:10}
+.card{border:1px solid #222;margin:12px;border-radius:16px;padding:12px;background:#0a0a0a}
+video{width:100%;background:#111;border-radius:12px;max-height:70vh}
+.btn{background:linear-gradient(90deg,#feda75,#fa7e1e,#d62976);border:0;padding:14px;border-radius:25px;font-weight:900;width:100%;font-size:16px}
+.btn-green{background:#00a859;color:#fff}
+.btn-like{background:#222;color:#fff;border:1px solid #333;width:auto;padding:8px 14px;border-radius:20px;margin-right:6px}
+input{width:100%;padding:14px;background:#111;color:#fff;border:1px solid #333;border-radius:10px;margin:6px 0;box-sizing:border-box}
 #progress{height:8px;background:#222;display:none;border-radius:5px;margin:10px 0;overflow:hidden}
 #bar{height:100%;background:#feda75;width:0%;transition:width 0.2s}
-#status{color:#feda75;text-align:center;margin:5px;font-weight:700}
+.row{display:flex;gap:8px;margin-top:8px}
 </style>
 </head>
 <body>
-<header>SNOOPGRAM 🌍 - Direct Upload</header>
+<header>SNOOPGRAM 🌍 UGANDA'S TIKTOK</header>
 <div style="padding:15px;max-width:500px;margin:auto">
-<input id="artist" placeholder="Artist name - Joshua Baraka">
-<input id="caption" placeholder="Caption - Yoyo">
+<input id="artist" placeholder="Artist - e.g Joshua Baraka">
+<input id="caption" placeholder="Caption - e.g Yoyo challenge">
 <input type="file" id="file" accept="video/*">
 <div id="progress"><div id="bar"></div></div>
-<div id="status"></div>
+<div id="status" style="color:#feda75;text-align:center;font-weight:700"></div>
 <button class="btn" id="upBtn" onclick="upload()">📤 UPLOAD & POST WORLDWIDE</button>
-<div id="feed" style="margin-top:20px"></div>
+<div id="feed" style="margin-top:20px">Loading feed...</div>
 </div>
 <script>
 const supa = supabase.createClient('https://dexrbqnzqnvjappgfpcp.supabase.co','sb_publishable_TqEnWYB73DBgu2ed62hAdg_UUhgYOm3');
 async function upload(){
- const fileInput = document.getElementById('file');
- const f = fileInput.files[0];
- if(!f){ alert('Pick video first!'); return; }
- const btn = document.getElementById('upBtn');
- const status = document.getElementById('status');
- const progress = document.getElementById('progress');
- const bar = document.getElementById('bar');
- btn.disabled = true;
- btn.innerText = 'UPLOADING... ⏳';
- status.innerText = 'Uploading ' + (f.size/1024/1024).toFixed(1) + 'MB...';
- progress.style.display = 'block';
- try {
-  const name = Date.now() + '_' + f.name.replace(/[^a-zA-Z0-9.-]/g,'_');
-  const {data, error} = await supa.storage.from('videos').upload(name, f, {cacheControl: '3600', upsert: false});
+ const f=document.getElementById('file').files[0];
+ if(!f){alert('Choose video!');return;}
+ const btn=document.getElementById('upBtn'); btn.disabled=true; btn.innerText='UPLOADING... ⏳';
+ document.getElementById('progress').style.display='block';
+ document.getElementById('status').innerText='Uploading '+ (f.size/1024/1024).toFixed(1)+'MB...';
+ try{
+  const name=Date.now()+'_'+f.name.replace(/[^a-zA-Z0-9.-]/g,'_');
+  const {error}=await supa.storage.from('videos').upload(name,f);
   if(error) throw error;
-  bar.style.width = '70%';
-  status.innerText = 'Getting link...';
-  const {data:urlData} = supa.storage.from('videos').getPublicUrl(name);
-  const publicUrl = urlData.publicUrl;
-  status.innerText = 'Posting...';
-  bar.style.width = '90%';
-  const artist = document.getElementById('artist').value || 'Anonymous';
-  const caption = document.getElementById('caption').value || '';
-  const {error:dbErr} = await supa.from('posts').insert([{artist_name: artist, caption: caption, video_url: publicUrl}]);
+  document.getElementById('bar').style.width='70%';
+  const {data}=supa.storage.from('videos').getPublicUrl(name);
+  const artist=document.getElementById('artist').value||'Snoopgram User';
+  const cap=document.getElementById('caption').value||'';
+  const {error:dbErr}=await supa.from('posts').insert([{artist_name:artist,caption:cap,video_url:data.publicUrl,likes:0}]);
   if(dbErr) throw dbErr;
-  bar.style.width = '100%';
-  status.innerText = 'LIVE! 🌍';
-  alert('SUCCESS! VIDEO LIVE WORLDWIDE 🌍🔥');
-  location.reload();
- } catch (e) {
-  alert('UPLOAD FAILED: ' + e.message);
-  status.innerText = 'Error: ' + e.message;
-  btn.disabled = false;
-  btn.innerText = '📤 UPLOAD & POST WORLDWIDE';
-  console.error(e);
- }
+  document.getElementById('bar').style.width='100%';
+  alert('🔥 LIVE WORLDWIDE!'); location.reload();
+ }catch(e){alert('FAILED: '+e.message); btn.disabled=false; btn.innerText='📤 UPLOAD & POST WORLDWIDE';}
+}
+async function like(id,cur){
+ await supa.from('posts').update({likes:(cur||0)+1}).eq('id',id); load();
 }
 async function load(){
- const {data, error} = await supa.from('posts').select('*').order('created_at',{ascending:false}).limit(20);
- if(error){ console.log(error); return; }
+ const {data}=await supa.from('posts').select('*').order('created_at',{ascending:false}).limit(30);
  if(data){
-  document.getElementById('feed').innerHTML = data.map(p=>{
-   const artist = p.artist_name || 'Anonymous';
-   const cap = p.caption || '';
-   const url = p.video_url || '';
-   if(!url) return '';
-   return `<div class="card"><b>${artist}</b><p>${cap}</p><video src="${url}" controls playsinline preload="metadata"></video><a href="https://flutterwave.com/pay/snoopgramtip" target="_blank"><button class="btn" style="background:#00a859;margin-top:8px">💛 TIP 10K MoMo</button></a></div>`;
-  }).join('');
+  document.getElementById('feed').innerHTML=data.map(p=>{
+   const url=p.video_url; if(!url) return '';
+   const artist=p.artist_name||p.artist||'Snoopgram User';
+   const cap=p.caption||''; const likes=p.likes||0;
+   return `<div class="card"><b>${artist}</b><p>${cap}</p><video src="${url}" controls playsinline preload="metadata"></video><div class="row"><button class="btn-like" onclick="like('${p.id}',${likes})">❤️ ${likes}</button><a href="https://wa.me/?text=${encodeURIComponent(url)}" target="_blank" style="flex:1"><button class="btn-like" style="width:100%">↗️ Share</button></a><a href="https://flutterwave.com/pay/snoopgramtip" target="_blank" style="flex:1"><button class="btn btn-green" style="padding:8px">💛 Tip 10K</button></a></div></div>`;
+  }).join('')||'No videos yet - be first!';
  }
 }
 load();
-supa.channel('posts-live').on('postgres_changes',{event:'INSERT',schema:'public',table:'posts'},()=>load()).subscribe();
+supa.channel('v6').on('postgres_changes',{event:'INSERT',schema:'public',table:'posts'},()=>load()).subscribe();
 </script>
 </body>
-  </html>
+</html>
