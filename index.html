@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Snoopgram V6 - Uganda TikTok</title>
+<title>Snoopgram V7 - JerryHerman</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js"></script>
 <style>
 body{background:#000;color:#fff;font-family:sans-serif;margin:0}
@@ -19,14 +19,14 @@ input{width:100%;padding:14px;background:#111;color:#fff;border:1px solid #333;b
 </style>
 </head>
 <body>
-<header>SNOOPGRAM 🌍 UGANDA'S TIKTOK</header>
+<header>SNOOPGRAM 🌍 @JerryHerman</header>
 <div style="padding:15px;max-width:500px;margin:auto">
-<input id="artist" placeholder="Artist - e.g Joshua Baraka">
-<input id="caption" placeholder="Caption - e.g Yoyo challenge">
+<input id="artist" value="JerryHerman">
+<input id="caption" placeholder="Caption - e.g Yoyo challenge 🔥">
 <input type="file" id="file" accept="video/*">
 <div id="progress"><div id="bar"></div></div>
 <div id="status" style="color:#feda75;text-align:center;font-weight:700"></div>
-<button class="btn" id="upBtn" onclick="upload()">📤 UPLOAD & POST WORLDWIDE</button>
+<button class="btn" id="upBtn" onclick="upload()">📤 POST AS @JerryHerman</button>
 <div id="feed" style="margin-top:20px">Loading feed...</div>
 </div>
 <script>
@@ -43,30 +43,32 @@ async function upload(){
   if(error) throw error;
   document.getElementById('bar').style.width='70%';
   const {data}=supa.storage.from('videos').getPublicUrl(name);
-  const artist=document.getElementById('artist').value||'Snoopgram User';
+  const artist=document.getElementById('artist').value||'JerryHerman';
   const cap=document.getElementById('caption').value||'';
+  localStorage.setItem('snoop_user',artist);
   const {error:dbErr}=await supa.from('posts').insert([{artist_name:artist,caption:cap,video_url:data.publicUrl,likes:0}]);
   if(dbErr) throw dbErr;
   document.getElementById('bar').style.width='100%';
-  alert('🔥 LIVE WORLDWIDE!'); location.reload();
- }catch(e){alert('FAILED: '+e.message); btn.disabled=false; btn.innerText='📤 UPLOAD & POST WORLDWIDE';}
+  alert('🔥 LIVE AS @'+artist+'!'); location.reload();
+ }catch(e){alert('FAILED: '+e.message); btn.disabled=false; btn.innerText='📤 POST AS @JerryHerman';}
 }
 async function like(id,cur){
  await supa.from('posts').update({likes:(cur||0)+1}).eq('id',id); load();
 }
 async function load(){
+ const saved=localStorage.getItem('snoop_user'); if(saved) document.getElementById('artist').value=saved;
  const {data}=await supa.from('posts').select('*').order('created_at',{ascending:false}).limit(30);
  if(data){
   document.getElementById('feed').innerHTML=data.map(p=>{
    const url=p.video_url; if(!url) return '';
-   const artist=p.artist_name||p.artist||'Snoopgram User';
+   const artist=p.artist_name||'JerryHerman';
    const cap=p.caption||''; const likes=p.likes||0;
-   return `<div class="card"><b>${artist}</b><p>${cap}</p><video src="${url}" controls playsinline preload="metadata"></video><div class="row"><button class="btn-like" onclick="like('${p.id}',${likes})">❤️ ${likes}</button><a href="https://wa.me/?text=${encodeURIComponent(url)}" target="_blank" style="flex:1"><button class="btn-like" style="width:100%">↗️ Share</button></a><a href="https://flutterwave.com/pay/snoopgramtip" target="_blank" style="flex:1"><button class="btn btn-green" style="padding:8px">💛 Tip 10K</button></a></div></div>`;
+   return `<div class="card"><b>@${artist}</b><p>${cap}</p><video src="${url}" controls playsinline preload="metadata"></video><div class="row"><button class="btn-like" onclick="like('${p.id}',${likes})">❤️ ${likes}</button><a href="https://wa.me/?text=${encodeURIComponent(url)}" target="_blank" style="flex:1"><button class="btn-like" style="width:100%">↗️ Share</button></a><a href="https://flutterwave.com/pay/snoopgramtip" target="_blank" style="flex:1"><button class="btn btn-green" style="padding:8px">💛 Tip 10K</button></a></div></div>`;
   }).join('')||'No videos yet - be first!';
  }
 }
 load();
-supa.channel('v6').on('postgres_changes',{event:'INSERT',schema:'public',table:'posts'},()=>load()).subscribe();
+supa.channel('v7').on('postgres_changes',{event:'INSERT',schema:'public',table:'posts'},()=>load()).subscribe();
 </script>
 </body>
 </html>
