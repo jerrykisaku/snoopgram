@@ -2,12 +2,13 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Snoopgram V9 - Insta Style</title>
+<title>Snoopgram V10 - With Logo</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js"></script>
 <style>
 body{background:#000;color:#fff;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto;margin:0;padding-bottom:70px}
-.top{position:sticky;top:0;background:#000;z-index:10;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #222}
-.logo{font-family:cursive;font-size:24px;font-weight:700}
+.top{position:sticky;top:0;background:#000;z-index:10;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #222}
+.logo-img{height:32px;border-radius:8px}
+.logo-txt{font-family:cursive;font-size:22px;font-weight:700;background:linear-gradient(45deg,#feda75,#fa7e1e,#d62976);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-left:6px}
 .stories{display:flex;gap:12px;overflow-x:auto;padding:10px 12px;border-bottom:1px solid #222}
 .story{text-align:center;min-width:60px}
 .ring{width:62px;height:62px;border-radius:50%;padding:2px;background:linear-gradient(45deg,#feda75,#fa7e1e,#d62976,#4f5bd5)}
@@ -19,46 +20,47 @@ body{background:#000;color:#fff;font-family:-apple-system,BlinkMacSystemFont,Seg
 .phead b{font-size:13px}
 .post img.main,.post video{width:100%;max-height:75vh;object-fit:contain;background:#111}
 .actions{display:flex;gap:14px;padding:10px;font-size:22px}
-.actions small{font-size:13px;margin-left:2px}
-.caption{padding:0 12px;font-size:13px;line-height:1.3}
+.caption{padding:0 12px;font-size:13px}
 .card{margin:10px;border:1px solid #222;border-radius:12px;padding:10px;background:#0a0a0a}
 input{width:100%;padding:12px;background:#111;color:#fff;border:1px solid #333;border-radius:10px;margin:6px 0;box-sizing:border-box}
-.btn{background:#0095f6;border:0;padding:10px;border-radius:8px;font-weight:700;color:#fff;width:100%}
-.nav{position:fixed;bottom:0;left:0;right:0;background:#000;border-top:1px solid #222;display:flex;justify-content:space-around;padding:10px 0;font-size:22px;max-width:500px;margin:auto}
+.btn{background:linear-gradient(90deg,#feda75,#fa7e1e,#d62976);border:0;padding:12px;border-radius:10px;font-weight:900;color:#fff;width:100%}
+.nav{position:fixed;bottom:0;left:0;right:0;background:#000;border-top:1px solid #222;display:flex;justify-content:space-around;padding:12px 0;font-size:22px;max-width:500px;margin:auto}
 #chatBox{position:fixed;bottom:60px;right:0;left:0;max-width:500px;margin:auto;background:#111;border:1px solid #333;border-radius:16px 16px 0 0;padding:10px;z-index:20;display:none;flex-direction:column;max-height:45vh}
 #messages{overflow-y:auto;flex:1;max-height:20vh}
 .msg{padding:6px 0;font-size:13px}
 </style>
 </head>
 <body>
-<div class="top"><span style="font-size:22px">+</span><span class="logo">Snoopgram</span><span>♡</span></div>
+<div class="top">
+<div style="display:flex;align-items:center"><img src="./logo.png" class="logo-img" onerror="this.src='https://i.ibb.co/8Xqz9t6/snoopgram-logo.png'"><span class="logo-txt">Snoopgram</span></div>
+<div style="display:flex;gap:14px;font-size:20px"><span>♡</span><span>✈️</span></div>
+</div>
 
 <div class="stories">
 <div class="story"><div class="ring"><img src="https://i.pravatar.cc/100?u=jerry"></div><span>Your story</span></div>
-<div class="story"><div class="ring"><img src="https://i.pravatar.cc/100?u=henry"></div><span>page_2_henry</span></div>
+<div class="story"><div class="ring"><img src="https://i.pravatar.cc/100?u=henry"></div><span>page_2</span></div>
 <div class="story"><div class="ring"><img src="https://i.pravatar.cc/100?u=toni"></div><span>toni.wase</span></div>
 <div class="story"><div class="ring"><img src="https://i.pravatar.cc/100?u=joshu"></div><span>itsjoshuaba</span></div>
 <div class="story"><div class="ring"><img src="https://i.pravatar.cc/100?u=nana"></div><span>nana</span></div>
 </div>
 
 <div style="max-width:500px;margin:auto;padding:10px">
-<input id="artist" value="JerryHerman" placeholder="Your @name">
-<input id="caption" placeholder="Write caption...">
+<input id="artist" value="JerryHerman">
+<input id="caption" placeholder="Caption...">
 <input type="file" id="file" accept="video/*,image/*">
-<button class="btn" onclick="upload()" id="upBtn">Share to Snoopgram</button>
-<div id="status" style="text-align:center;color:#feda75;font-size:12px"></div>
+<button class="btn" onclick="upload()" id="upBtn">📤 SHARE TO SNOOPGRAM</button>
 </div>
 
-<div id="feed" style="max-width:500px;margin:auto"></div>
+<div id="feed" style="max-width:500px;margin:auto">Loading...</div>
 
 <div class="nav"><span>⌂</span><span>◎</span><span>＋</span><span onclick="toggleChat()">💬</span><span>◍</span></div>
 
-<div id="chatBox"><b>Live Chat 💬</b><div id="messages"></div><div style="display:flex;gap:6px;margin-top:8px"><input id="chatMsg" placeholder="Message..."><button class="btn" style="width:auto" onclick="sendMsg()">Send</button></div></div>
+<div id="chatBox"><div style="display:flex;justify-content:space-between"><b>🔥 Live Chat</b><span onclick="toggleChat()">✕</span></div><div id="messages"></div><div style="display:flex;gap:6px;margin-top:8px"><input id="chatMsg" placeholder="Message..."><button class="btn" style="width:auto" onclick="sendMsg()">Send</button></div></div>
 
 <script>
 const supa=supabase.createClient('https://dexrbqnzqnvjappgfpcp.supabase.co','sb_publishable_TqEnWYB73DBgu2ed62hAdg_UUhgYOm3');
 async function upload(){
- const f=document.getElementById('file').files[0]; if(!f){alert('Pick image/video');return;}
+ const f=document.getElementById('file').files[0]; if(!f){alert('Pick file');return;}
  const b=document.getElementById('upBtn'); b.innerText='Posting...'; b.disabled=true;
  try{
   const name=Date.now()+'_'+f.name.replace(/[^a-z0-9.-]/gi,'_');
@@ -69,25 +71,6 @@ async function upload(){
   localStorage.setItem('snoop_user',artist);
   await supa.from('posts').insert([{artist_name:artist,caption:cap,video_url:data.publicUrl,likes:1204}]);
   alert('Posted!'); location.reload();
- }catch(e){alert(e.message); b.disabled=false; b.innerText='Share to Snoopgram'}
+ }catch(e){alert(e.message); b.disabled=false; b.innerText='📤 SHARE TO SNOOPGRAM'}
 }
-async function like(id,cur){ await supa.from('posts').update({likes:(cur||0)+1}).eq('id',id); load(); }
-async function load(){
- const saved=localStorage.getItem('snoop_user'); if(saved) document.getElementById('artist').value=saved;
- const {data}=await supa.from('posts').select('*').order('created_at',{ascending:false}).limit(30);
- if(data){
-  document.getElementById('feed').innerHTML=data.map(p=>{
-   const isVideo=p.video_url && (p.video_url.includes('.mp4')||p.video_url.includes('video'));
-   const media=isVideo?`<video src="${p.video_url}" controls playsinline class="main"></video>`:`<img src="${p.video_url}" class="main">`;
-   return `<div class="post"><div class="phead"><img src="https://i.pravatar.cc/100?u=${p.artist_name}"><div><b>${p.artist_name||'JerryHerman'}</b> • <small>6d</small><br><small style="color:#aaa">♫ Elijah Kitaka...</small></div><span style="margin-left:auto">═</span></div>${media}<div class="actions"><span onclick="like('${p.id}',${p.likes||0})">♡ <small>${p.likes||0}</small></span><span>○ <small>19</small></span><span>↻ <small>68</small></span><span style="margin-left:auto">⌖</span></div><div class="caption"><b>${p.artist_name}</b> ${p.caption||'This is unusual. 🔥'} <span style="color:#aaa">...more</span></div></div>`;
-  }).join('');
- }
-}
-function toggleChat(){ const c=document.getElementById('chatBox'); c.style.display=c.style.display==='flex'?'none':'flex'; }
-async function loadChat(){ const {data}=await supa.from('messages').select('*').order('created_at',{ascending:false}).limit(30); if(data){ document.getElementById('messages').innerHTML=data.reverse().map(m=>`<div class="msg"><b>${m.user_name}:</b> ${m.message}</div>`).join(''); } }
-async function sendMsg(){ const t=document.getElementById('chatMsg').value.trim(); if(!t) return; const n=document.getElementById('artist').value||'Anon'; await supa.from('messages').insert([{user_name:n,message:t}]); document.getElementById('chatMsg').value=''; loadChat(); }
-load(); loadChat();
-supa.channel('v9').on('postgres_changes',{event:'*',schema:'public',table:'posts'},()=>load()).on('postgres_changes',{event:'INSERT',schema:'public',table:'messages'},()=>loadChat()).subscribe();
-</script>
-</body>
-</html>
+async function like(id,cur){ await supa.from('posts').update({likes:(cur||0)+1}).
